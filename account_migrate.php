@@ -55,16 +55,14 @@ define( 'ACCT_TRANSFER_DB_HOST', 'database' );
 define( 'ACCT_TRANSFER_DB_NAME', 'wordpress_development' );
 define( 'ACCT_TRANSFER_DB_ACCOUNT_TABLE', 'login');
 
-
 require_once( ACCT_TRANSFER_PLUGIN_DIR . 'functions.php' );
 
-
-function dbi_add_settings_page() {
-    add_options_page( 'Account Migration', 'Account Migration', 'manage_options', ‘account-migrate-plugin’, 'dbi_render_plugin_settings_page' );
+function account_migrate_add_settings_page() {
+    add_options_page( 'Account Migration', 'Account Migration', 'manage_options', ‘account-migrate-plugin’, 'account_migrate_render_plugin_settings_page' );
 }
-add_action( 'admin_menu', 'dbi_add_settings_page' );
+add_action( 'admin_menu', 'account_migrate_add_settings_page' );
 
-function dbi_render_plugin_settings_page() {
+function account_migrate_render_plugin_settings_page() {
     ?>
     <h2>Account Migration Settings</h2>
     <form action="options.php" method="post">
@@ -76,7 +74,7 @@ function dbi_render_plugin_settings_page() {
     <?php
 }
 
-function dbi_register_settings() {
+function account_migrate_register_settings() {
     register_setting( 'account_migrate_plugin_options', 'account_migrate_plugin_options', 'account_migrate_plugin_options_validate' );
     add_settings_section( 'api_settings', 'API Settings', 'account_migrate_plugin_section_text', 'account_migrate_plugin' );
 
@@ -87,10 +85,10 @@ function dbi_register_settings() {
     add_settings_field( 'account_migrate_plugin_setting_database_password', 'Database Password', 'account_migrate_plugin_setting_database_password', 'account_migrate_plugin', 'api_settings' );
     add_settings_field( 'account_migrate_plugin_setting_database_confirm_password', 'Database Password', 'account_migrate_plugin_setting_database_confirm_password', 'account_migrate_plugin', 'api_settings' );
 }
-add_action( 'admin_init', 'dbi_register_settings' );
+add_action( 'admin_init', 'account_migrate_register_settings' );
 
 function account_migrate_plugin_section_text() {
-    echo '<p>Here you can set all the options for using the API</p>';
+    echo '<p>Here you can set all the account migration options.</p>';
 }
 
 function account_migrate_plugin_setting_database_host() {
@@ -122,4 +120,3 @@ function account_migrate_plugin_options_validate( $input ) {
     $newinput['database_name'] = trim( $input['database_name'] );
     return $newinput;
 }
-

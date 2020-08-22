@@ -8,7 +8,6 @@ function account_migrate_log($text) {
     }
 }
 
-
 function account_migrate_action($username, $password){
 
         $mysqli = new mysqli(ACCT_TRANSFER_DB_HOST, ACCT_TRANSFER_DB_USER, ACCT_TRANSFER_DB_PASSWORD, ACCT_TRANSFER_DB_NAME);
@@ -24,24 +23,35 @@ function account_migrate_action($username, $password){
         $result = $mysqli->query($query);
         if ($result->num_rows === 1 ) {
             account_migrate_log("Found account for ". $username);
-            account_migrate_create_user($username, $password);
+            $dbUser = $result->fetch_assoc();
+            account_migrate_log( print_r($dbUser, true) );
+            account_migrate_create_user($dbUser);
         } else {
             account_migrate_log("Failed to authenticate user ". $username );
         }
+        $result->free();
         $mysqli->close();
 
 }
 
-
-function account_migrate_create_user($username, $password){
+function account_migrate_create_user($user){
     $userDetails = Array(
-        "user_login" => $username,
-        "user_pass" => $password,
+        "user_login" => $user["username"],
+        "user_pass" => $user["password"],
+        "display_name" => $user["name"],
+        "show_admin_bar_front" => false,
         "description" => "Migrated from Database: ". ACCT_TRANSFER_DB_NAME .", Table: ". ACCT_TRANSFER_DB_ACCOUNT_TABLE,
     );
-    wp_insert_user($userDetails);
-}
+    $user_id = wp_insert_user( $userDetails ) ;
+    
+    if ( ! is_wp_error( $user_id ) ) {
+        if( is_file(ACCT_TRANSFER_PLUGIN_DIR . "/user_meta.php") ){
+            require_once(ACCT_TRANSFER_PLUGIN_DIR . "/user_meta.php");
+            account_migrate_create_user_metta($user_id, $user);       
+        }
+    }   
 
+}
 
 function account_migrate_preauth_hook($username, $password ) {
 
