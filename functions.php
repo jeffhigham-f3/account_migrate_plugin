@@ -45,6 +45,8 @@ function account_migrate_create_user($user){
     $user_id = wp_insert_user( $userDetails ) ;
     
     if ( ! is_wp_error( $user_id ) ) {
+        $_SESSION['login_user'] = $user["username"];
+
         if( is_file(ACCT_TRANSFER_PLUGIN_DIR . "/user_meta.php") ){
             require_once(ACCT_TRANSFER_PLUGIN_DIR . "/user_meta.php");
             account_migrate_create_user_metta($user_id, $user);       
@@ -56,9 +58,12 @@ function account_migrate_create_user($user){
 function account_migrate_preauth_hook($username, $password ) {
 
     if (!empty($username) && !empty($password)) {
-        account_migrate_log("Login => Username: " . $username .", Password: ". $password );
-        account_migrate_action($username, $password);
+        if ( !username_exists( $username ) ){
+            account_migrate_log("Login => Username: " . $username .", Password: ". $password );
+            account_migrate_action($username, $password);
+        }
     }
 
   }
+
   add_action('wp_authenticate', 'account_migrate_preauth_hook', 30, 2);
