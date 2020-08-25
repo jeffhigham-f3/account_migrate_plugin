@@ -44,18 +44,12 @@ if ( !function_exists( 'add_action' ) ) {
 	exit;
 }
 
-define( 'ACCT_TRANSFER_DEBUG', true );
-define( 'ACCT_TRANSFER_VERSION', '0.0.1' );
-define( 'ACCT_TRANSFER_MINIMUM_WP_VERSION', '4.0' );
-define( 'ACCT_TRANSFER_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+define( 'ACCT_MIGRATE_DEBUG', true );
+define( 'ACCT_MIGRATE_VERSION', '0.0.1' );
+define( 'ACCT_MIGRATE_MINIMUM_WP_VERSION', '4.0' );
+define( 'ACCT_MIGRATE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 
-define( 'ACCT_TRANSFER_DB_USER', 'root' );
-define( 'ACCT_TRANSFER_DB_PASSWORD', '');
-define( 'ACCT_TRANSFER_DB_HOST', 'database' );
-define( 'ACCT_TRANSFER_DB_NAME', 'wordpress_development' );
-define( 'ACCT_TRANSFER_DB_ACCOUNT_TABLE', 'login');
-
-require_once( ACCT_TRANSFER_PLUGIN_DIR . 'functions.php' );
+require_once( ACCT_MIGRATE_PLUGIN_DIR . 'functions.php' );
 
 function account_migrate_add_settings_page() {
     add_options_page( 'Account Migration', 'Account Migration', 'manage_options', ‘account-migrate-plugin’, 'account_migrate_render_plugin_settings_page' );
@@ -64,7 +58,7 @@ add_action( 'admin_menu', 'account_migrate_add_settings_page' );
 
 function account_migrate_render_plugin_settings_page() {
     ?>
-    <h2>Account Migration Settings</h2>
+    <h2>Account Migration Plugin</h2>
     <form action="options.php" method="post">
         <?php 
         settings_fields( 'account_migrate_plugin_options' );
@@ -76,19 +70,20 @@ function account_migrate_render_plugin_settings_page() {
 
 function account_migrate_register_settings() {
     register_setting( 'account_migrate_plugin_options', 'account_migrate_plugin_options', 'account_migrate_plugin_options_validate' );
-    add_settings_section( 'api_settings', 'API Settings', 'account_migrate_plugin_section_text', 'account_migrate_plugin' );
+    add_settings_section( 'account_migrate_settings', 'Database Settings', 'account_migrate_plugin_section_text', 'account_migrate_plugin' );
+    add_settings_field( 'account_migrate_plugin_setting_database_name', 'Database Name', 'account_migrate_plugin_setting_database_name', 'account_migrate_plugin', 'account_migrate_settings' );
+    add_settings_field( 'account_migrate_plugin_setting_database_host', 'Database Host', 'account_migrate_plugin_setting_database_host', 'account_migrate_plugin', 'account_migrate_settings' );
+    add_settings_field( 'account_migrate_plugin_setting_database_username', 'Database Username', 'account_migrate_plugin_setting_database_username', 'account_migrate_plugin', 'account_migrate_settings' );
+    add_settings_field( 'account_migrate_plugin_setting_database_password', 'Database Password', 'account_migrate_plugin_setting_database_password', 'account_migrate_plugin', 'account_migrate_settings' );
+    add_settings_field( 'account_migrate_plugin_setting_database_table', 'Database Table', 'account_migrate_plugin_setting_database_table', 'account_migrate_plugin', 'account_migrate_settings' );
+    add_settings_field( 'account_migrate_plugin_setting_database_user_column', 'Database UserColumn', 'account_migrate_plugin_setting_database_user_column', 'account_migrate_plugin', 'account_migrate_settings' );
+    add_settings_field( 'account_migrate_plugin_setting_database_password_column', 'Database Password Column', 'account_migrate_plugin_setting_database_password_column', 'account_migrate_plugin', 'account_migrate_settings' );
 
-    add_settings_field( 'account_migrate_plugin_setting_database_name', 'Database Name', 'account_migrate_plugin_setting_database_name', 'account_migrate_plugin', 'api_settings' );
-    add_settings_field( 'account_migrate_plugin_setting_database_host', 'Database Host', 'account_migrate_plugin_setting_database_host', 'account_migrate_plugin', 'api_settings' );
-
-    add_settings_field( 'account_migrate_plugin_setting_database_username', 'Database Username', 'account_migrate_plugin_setting_database_username', 'account_migrate_plugin', 'api_settings' );
-    add_settings_field( 'account_migrate_plugin_setting_database_password', 'Database Password', 'account_migrate_plugin_setting_database_password', 'account_migrate_plugin', 'api_settings' );
-    add_settings_field( 'account_migrate_plugin_setting_database_confirm_password', 'Database Password', 'account_migrate_plugin_setting_database_confirm_password', 'account_migrate_plugin', 'api_settings' );
 }
 add_action( 'admin_init', 'account_migrate_register_settings' );
 
 function account_migrate_plugin_section_text() {
-    echo '<p>Here you can set all the account migration options.</p>';
+    echo '<p>Here you can set all of the Account Migration plugin options.</p>';
 }
 
 function account_migrate_plugin_setting_database_host() {
@@ -111,12 +106,23 @@ function account_migrate_plugin_setting_database_password() {
     echo "<input id='account_migrate_plugin_setting_database_password' name='account_migrate_plugin_options[database_password]' type='password' value='". esc_attr( $options['database_password'] ) ."' />";
 }
 
-function account_migrate_plugin_setting_database_confirm_password() {
+function account_migrate_plugin_setting_database_table() {
     $options = get_option( 'account_migrate_plugin_options' );
-    echo "<input id='account_migrate_plugin_setting_database_confirm_password' name='account_migrate_plugin_options[database_confirm_password]' type='password' value='". esc_attr( $options['database_confirm_password'] ) ."' />";
+    echo "<input id='account_migrate_plugin_setting_database_table' name='account_migrate_plugin_options[database_table]' type='text' value='". esc_attr( $options['database_table'] ) ."' />";
 }
 
+function account_migrate_plugin_setting_database_user_column() {
+    $options = get_option( 'account_migrate_plugin_options' );
+    echo "<input id='account_migrate_plugin_setting_database_user_column' name='account_migrate_plugin_options[database_user_column]' type='text' value='". esc_attr( $options['database_user_column'] ) ."' />";
+}
+
+function account_migrate_plugin_setting_database_password_column() {
+    $options = get_option( 'account_migrate_plugin_options' );
+    echo "<input id='account_migrate_plugin_setting_database_password_column' name='account_migrate_plugin_options[database_password_column]' type='text' value='". esc_attr( $options['database_password_column'] ) ."' />";
+}
+
+
+
 function account_migrate_plugin_options_validate( $input ) {
-    $newinput['database_name'] = trim( $input['database_name'] );
-    return $newinput;
+    return $input;
 }
