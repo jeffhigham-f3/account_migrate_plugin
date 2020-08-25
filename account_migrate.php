@@ -121,8 +121,6 @@ function account_migrate_plugin_setting_database_password_column() {
     echo "<input id='account_migrate_plugin_setting_database_password_column' name='account_migrate_plugin_options[database_password_column]' type='text' value='". esc_attr( $options['database_password_column'] ) ."' />";
 }
 
-
-
 function account_migrate_plugin_options_validate( $input ) {
     return $input;
 }
