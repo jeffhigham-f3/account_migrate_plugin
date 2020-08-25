@@ -10,30 +10,34 @@ function account_migrate_log($text) {
 
 function account_migrate_action($username, $password){
 
-        $options = get_option('account_migrate_plugin_options');
-        $mysqli = new mysqli($options['database_host'], $options['database_username'],  $options['database_password'], $options['database_name']);
-        account_migrate_log("Connecting to Host: ". $options['database_host'] ." Database: ".$options['database_name'] );
+    $options = get_option('account_migrate_plugin_options');
+    $mysqli = new mysqli($options['database_host'], $options['database_username'],  $options['database_password'], $options['database_name']);
+    account_migrate_log("Connecting to Host: ". $options['database_host'] ." Database: ".$options['database_name'] );
+    if ($mysqli->connect_errno) {
+        account_migrate_log( "Error: Failed to make a MySQL connection.  Errno: " . $mysqli->connect_errno);
+        exit;
+    }
+    $query = "select * from ". $options['database_table'] ." where ". $options['database_user_column'] ."='$username'";
+    account_migrate_log($query);
+    $result = $mysqli->query($query);
+    
+    if($result->num_rows != 1)
+    return;
+    
+    $dbUser = $result->fetch_assoc();
 
-        if ($mysqli->connect_errno) {
-            account_migrate_log( "Error: Failed to make a MySQL connection.  Errno: " . $mysqli->connect_errno);
-            exit;
-        }
-        $query = "select * from ". $options['database_table'] ." where ". $options['database_user_column'] ."='$username' AND ". $options['database_password_column'] ."='$password'";
-        account_migrate_log($query);
+    if( $dbUser['password'] == $password || $dbUser['password'] == password_hash( $password, $options['database_password_algorithm']) ) {
+        account_migrate_log("Found account for ". $username);
+        account_migrate_log( print_r($dbUser, true) );
+        account_migrate_create_user($dbUser);
+    } else {
+        account_migrate_log("Failed to authenticate user ". $username );
+    }
 
-        $result = $mysqli->query($query);
-        if ($result->num_rows === 1 ) {
-            account_migrate_log("Found account for ". $username);
-            $dbUser = $result->fetch_assoc();
-            account_migrate_log( print_r($dbUser, true) );
-            account_migrate_create_user($dbUser);
-        } else {
-            account_migrate_log("Failed to authenticate user ". $username );
-        }
-        $result->free();
-        $mysqli->close();
-
+    $result->free();
+    $mysqli->close();
 }
+
 
 function account_migrate_create_user($user){
     $options = get_option('account_migrate_plugin_options');

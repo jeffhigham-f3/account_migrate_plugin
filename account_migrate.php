@@ -78,6 +78,7 @@ function account_migrate_register_settings() {
     add_settings_field( 'account_migrate_plugin_setting_database_table', 'Database Table', 'account_migrate_plugin_setting_database_table', 'account_migrate_plugin', 'account_migrate_settings' );
     add_settings_field( 'account_migrate_plugin_setting_database_user_column', 'Database UserColumn', 'account_migrate_plugin_setting_database_user_column', 'account_migrate_plugin', 'account_migrate_settings' );
     add_settings_field( 'account_migrate_plugin_setting_database_password_column', 'Database Password Column', 'account_migrate_plugin_setting_database_password_column', 'account_migrate_plugin', 'account_migrate_settings' );
+    add_settings_field( 'account_migrate_plugin_setting_database_password_algorithm', 'Database Password Algorithm', 'account_migrate_plugin_setting_database_password_algorithm', 'account_migrate_plugin', 'account_migrate_settings' );
 
 }
 add_action( 'admin_init', 'account_migrate_register_settings' );
@@ -119,6 +120,11 @@ function account_migrate_plugin_setting_database_user_column() {
 function account_migrate_plugin_setting_database_password_column() {
     $options = get_option( 'account_migrate_plugin_options' );
     echo "<input id='account_migrate_plugin_setting_database_password_column' name='account_migrate_plugin_options[database_password_column]' type='text' value='". esc_attr( $options['database_password_column'] ) ."' />";
+}
+
+function account_migrate_plugin_setting_database_password_algorithm() {
+    $options = get_option( 'account_migrate_plugin_options' );
+    echo "<input id='account_migrate_plugin_setting_database_password_algorithm' name='account_migrate_plugin_options[database_password_algorithm]' type='text' value='". esc_attr( $options['database_password_algorithm'] ) ."' />";
 }
 
 function account_migrate_plugin_options_validate( $input ) {
