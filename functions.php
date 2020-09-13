@@ -26,7 +26,10 @@ function account_migrate_action($username, $password){
     
     $dbUser = $result->fetch_assoc();
 
-    if( $dbUser['password'] == $password || $dbUser['password'] == password_hash( $password, $options['database_password_algorithm']) ) {
+    //TODO: Update with switch logic based on $options['password_algorithm'];
+
+    // if( $dbUser['password'] == $password || $dbUser['password'] == password_hash( $password, $options['password_algorithm']) ) {
+    if( $dbUser['password'] == $password  ) {
         account_migrate_log("Found account for ". $username);
         account_migrate_log( print_r($dbUser, true) );
         account_migrate_create_user($dbUser);

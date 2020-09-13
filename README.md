@@ -1,4 +1,2 @@
 # Wordpress Plugin: Account Migrate
-Migrate an account from an external database table to a Wordpress account prior to wordpress authentication.
-
-* purpose built for a specific project but can be used as a reference for other implementations
+Migrate a user account from an external database into Wordpress. Install the plugin, configure the database information under settings, and Users will seamlessly migrate upon login. Supports migrating plain-text passwords (yuck), passwords created PHP password_hash, or your own custom PHP functions to verify passwords. 
