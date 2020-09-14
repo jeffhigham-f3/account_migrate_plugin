@@ -10,12 +10,11 @@ function account_migrate_log($text) {
 
 function account_migrate_action($username, $password){
 
-    $options = get_option('account_migrate_plugin_options');
+    $options = get_option('account_migrate_options');
     $mysqli = new mysqli($options['database_host'], $options['database_username'],  $options['database_password'], $options['database_name']);
     account_migrate_log("Connecting to Host: ". $options['database_host'] ." Database: ".$options['database_name'] );
     if ($mysqli->connect_errno) {
         account_migrate_log( "Error: Failed to make a MySQL connection.  Errno: " . $mysqli->connect_errno);
-        exit;
     }
     $query = "select * from ". $options['database_table'] ." where ". $options['database_user_column'] ."='$username'";
     account_migrate_log($query);
@@ -25,11 +24,37 @@ function account_migrate_action($username, $password){
     return;
     
     $dbUser = $result->fetch_assoc();
+    account_migrate_log(print_r($dbUser,1));
 
-    //TODO: Update with switch logic based on $options['password_algorithm'];
+    account_migrate_log("Password algorithm is: ". $options['password_algorithm'] );
+    $authenticated = false;
+    $dbPassword = $dbUser['password'];
+    switch ($options['password_algorithm']) {
+        
+        case "PASSWORD_VERIFY":
+            $authenticated = password_verify($password, $dbPassword);
+            break;
 
-    // if( $dbUser['password'] == $password || $dbUser['password'] == password_hash( $password, $options['password_algorithm']) ) {
-    if( $dbUser['password'] == $password  ) {
+        case "PLAIN_TEXT":
+            $authenticated = ($dbPassword == $password);
+            break;
+
+        case "CUSTOM_VALIDATOR_FUNCTION":
+            account_migrate_log("Executing code:\n". print_r($options['password_validator'], true) );
+            eval($options['password_validator']);
+            if( class_exists('\AccountMigrate\Password') && method_exists('\AccountMigrate\Password','validate') ) {
+                $authenticated = \AccountMigrate\Password::validate($password, $dbPassword);
+            } else {
+                account_migrate_log("Invalid custom validator!"); 
+            }
+            break;
+        
+        default: 
+            break;
+    }
+    
+    if( $authenticated ) {
+        $dbUser['password'] = $password;
         account_migrate_log("Found account for ". $username);
         account_migrate_log( print_r($dbUser, true) );
         account_migrate_create_user($dbUser);
@@ -43,7 +68,7 @@ function account_migrate_action($username, $password){
 
 
 function account_migrate_create_user($user){
-    $options = get_option('account_migrate_plugin_options');
+    $options = get_option('account_migrate_options');
 
     $userDetails = Array(
         "user_login" => $user["username"],
@@ -51,7 +76,10 @@ function account_migrate_create_user($user){
         "display_name" => $user["name"],
         "show_admin_bar_front" => false,
         "description" => "Migrated from Database: ". $options['database_name'] .", Table: ". $options['database_table'],
+        "role" => wp_roles()->is_role( $options['user_role'] ) ? $options['user_role'] : 'subscriber'
+        // "role" => $options['user_role']
     );
+    account_migrate_log( print_r($userDetails, true) );
 
     $user_id = wp_insert_user( $userDetails ) ;
     

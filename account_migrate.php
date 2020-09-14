@@ -9,33 +9,8 @@ Description: Migrate a user account from an external database into Wordpress. In
 Version: 1.0.0
 Author: Jeff Higham
 Author URI: https://github.com/jeffhigham-f3
-License: MIT
+License: GPLv3
 Text Domain: f3software
-*/
-
-/*
-MIT License
-
-Copyright (c) 2020 Jeff Higham - F3 Software, LLC
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
 */
 
 // Make sure we don't expose any info if called directly
@@ -44,7 +19,7 @@ if ( !function_exists( 'add_action' ) ) {
 	exit;
 }
 
-define( 'ACCT_MIGRATE_DEBUG', true );
+define( 'ACCT_MIGRATE_DEBUG', false );
 define( 'ACCT_MIGRATE_VERSION', '0.0.1' );
 define( 'ACCT_MIGRATE_MINIMUM_WP_VERSION', '4.0' );
 define( 'ACCT_MIGRATE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
@@ -52,7 +27,7 @@ define( 'ACCT_MIGRATE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 require_once( ACCT_MIGRATE_PLUGIN_DIR . 'functions.php' );
 
 function account_migrate_add_settings_page() {
-    add_options_page( 'Account Migration', 'Account Migration', 'manage_options', ‘account-migrate-plugin’, 'account_migrate_render_plugin_settings_page' );
+    add_options_page( 'Account Migration', 'Account Migration', 'manage_options', 'account-migrate-plugin', 'account_migrate_render_plugin_settings_page' );
 }
 add_action( 'admin_menu', 'account_migrate_add_settings_page' );
 
@@ -131,22 +106,22 @@ function account_migrate_database_password_algorithm() {
     $options = get_option( 'account_migrate_options' );
     $options['password_algorithm'] = ($options['password_algorithm'] == '') ? 'PLAIN_TEXT' : $options['password_algorithm'];
 
+    account_migrate_log( print_r($options['password_algorithm'],1) );
+
+
     print "<select id='account_migrate_database_password_algorithm' name='account_migrate_options[password_algorithm]'>";
+    print "<option value='PASSWORD_VERIFY' ". selected( $options['password_algorithm'], 'PASSWORD_VERIFY' ) .">PASSWORD VERIFY (PHP)</option>";
     print "<option value='PLAIN_TEXT' ". selected( $options['password_algorithm'], 'PLAIN_TEXT' ) .">PLAIN TEXT</option>";
     print "<option value='CUSTOM_VALIDATOR_FUNCTION' ". selected( $options['password_algorithm'], 'CUSTOM_VALIDATOR_FUNCTION' ) .">CUSTOM VALIDATOR FUNCTION</option>";
-    print "<option value='PASSWORD_DEFAULT' ". selected( $options['password_algorithm'], 'PASSWORD_DEFAULT' ) .">PASSWORD_DEFAULT</option>";
-    print "<option value='PASSWORD_BCRYPT' ". selected( $options['password_algorithm'], 'PASSWORD_BCRYPT' ) .">PASSWORD_BCRYPT</option>";
-    print "<option value='PASSWORD_ARGON2I' ". selected( $options['password_algorithm'], 'PASSWORD_ARGON2I' ) .">PASSWORD_ARGON2I</option>";
-    print "<option value='PASSWORD_ARGON2ID' ". selected( $options['password_algorithm'], 'PASSWORD_ARGON2ID' ) .">PASSWORD_ARGON2ID</option>";
     print "</select>";
     print ' <a target="_blank" href="https://www.php.net/manual/en/function.password-hash.php">More Info</a>';
 }
 
 function account_migrate_database_custom_validator() {
     $options = get_option( 'account_migrate_options' );
-    $options['password_validator'] = ($options['password_validator'] == '') ? "<?php\nnamespace AccountMigrate;\n\nclass Password {\n\n static function validate(\$password){\n\n    // your code here;\n    return true;\n\n  };\n\n}\n?>" : $options['password_validator'];
+    $options['password_validator'] = ($options['password_validator'] == '') ? file_get_contents(ACCT_MIGRATE_PLUGIN_DIR . "/sample_validator.php") : $options['password_validator'];
     $disabled = ($options['password_algorithm'] == 'CUSTOM_VALIDATOR_FUNCTION') ? '' : 'disabled';
-    print "<textarea ". $disabled ."  rows='15' cols='60' id='account_migrate_password_validator' name='account_migrate_options[password_validator]'>". esc_attr( $options['password_validator'] ) ."</textarea>";
+    print "<textarea ". $disabled ."  rows='20' cols='80' id='account_migrate_password_validator' name='account_migrate_options[password_validator]'>". $options['password_validator'] ."</textarea>";
 }
 
 function account_migrate_user_role() {
