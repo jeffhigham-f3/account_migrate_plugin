@@ -6,7 +6,7 @@
 Plugin Name: Account Migration
 Plugin URI: https://github.com/jeffhigham-f3/account_migrate
 Description: Migrate a user account from an external database into Wordpress. Install the plugin, configure the database information under settings, and Users will seamlessly migrate upon login. Supports migrating plain-text passwords (yuck), passwords created PHP <a href='https://www.php.net/manual/en/function.password-hash.php'>password_hash</a>, or your own custom PHP functions to verify passwords. 
-Version: 1.0.0
+Version: 0.1.0
 Author: Jeff Higham
 Author URI: https://github.com/jeffhigham-f3
 License: GPLv3
@@ -20,7 +20,7 @@ if ( !function_exists( 'add_action' ) ) {
 }
 
 define( 'ACCT_MIGRATE_DEBUG', false );
-define( 'ACCT_MIGRATE_VERSION', '0.0.1' );
+define( 'ACCT_MIGRATE_VERSION', '0.1.0' );
 define( 'ACCT_MIGRATE_MINIMUM_WP_VERSION', '4.0' );
 define( 'ACCT_MIGRATE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 
