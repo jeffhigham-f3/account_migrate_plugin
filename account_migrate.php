@@ -5,7 +5,7 @@
 /*
 Plugin Name: Account Migration
 Plugin URI: https://github.com/jeffhigham-f3/account_migrate
-Description: Migrate a user account from an external database into Wordpress. Install the plugin, configure the database information under settings, and Users will seamlessly migrate upon login. Supports migrating plain-text passwords (yuck), passwords created PHP <a href='https://www.php.net/manual/en/function.password-hash.php'>password_hash</a>, or your own custom PHP functions to verify passwords. 
+Description: Migrate a user account from an external database into Wordpress. Install the plugin, configure the database information under settings, and Users will seamlessly migrate upon login. Supports migrating plain-text passwords (yuck), PHP password_verify(), or your own custom PHP functions to verify passwords.
 Version: 0.1.0
 Author: Jeff Higham
 Author URI: https://github.com/jeffhigham-f3
@@ -114,7 +114,6 @@ function account_migrate_database_password_algorithm() {
     print "<option value='PLAIN_TEXT' ". selected( $options['password_algorithm'], 'PLAIN_TEXT' ) .">PLAIN TEXT</option>";
     print "<option value='CUSTOM_VALIDATOR_FUNCTION' ". selected( $options['password_algorithm'], 'CUSTOM_VALIDATOR_FUNCTION' ) .">CUSTOM VALIDATOR FUNCTION</option>";
     print "</select>";
-    print ' <a target="_blank" href="https://www.php.net/manual/en/function.password-hash.php">More Info</a>';
 }
 
 function account_migrate_database_custom_validator() {
