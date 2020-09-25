@@ -19,7 +19,6 @@ if ( !function_exists( 'add_action' ) ) {
 	exit;
 }
 
-define( 'ACCT_MIGRATE_DEBUG', false );
 define( 'ACCT_MIGRATE_VERSION', '0.1.0' );
 define( 'ACCT_MIGRATE_MINIMUM_WP_VERSION', '4.0' );
 define( 'ACCT_MIGRATE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
@@ -54,6 +53,7 @@ function account_migrate_register_settings() {
     add_settings_field( 'account_migrate_database_user_column', 'Database UserColumn', 'account_migrate_database_user_column', 'account_migrate', 'account_migrate' );
     add_settings_field( 'account_migrate_database_password_column', 'Database Password Column', 'account_migrate_database_password_column', 'account_migrate', 'account_migrate' );
     add_settings_field( 'account_migrate_user_role', 'Wordpress User Role', 'account_migrate_user_role', 'account_migrate', 'account_migrate' );
+    add_settings_field( 'account_migrate_debug', 'Debug Log', 'account_migrate_debug', 'account_migrate', 'account_migrate' );
     add_settings_field( 'account_migrate_database_password_algorithm', 'Database Password Algorithm', 'account_migrate_database_password_algorithm', 'account_migrate', 'account_migrate' );
     add_settings_field( 'account_migrate_database_custom_validator', 'Custom Validator Function', 'account_migrate_database_custom_validator', 'account_migrate', 'account_migrate' );
 
@@ -129,6 +129,15 @@ function account_migrate_user_role() {
     print "<select id='account_migrate_user_role' name='account_migrate_options[user_role]'>";
     foreach( wp_roles()->roles as $role => $roleObj ){
         print "<option value='". $role ."' ". selected( $options['user_role'], $role ) .">". $roleObj['name'] ."</option>";
+    }
+    print "</select>";
+}
+
+function account_migrate_debug() {
+    $options = get_option( 'account_migrate_options' );
+    print "<select id='account_migrate_debug' name='account_migrate_options[debug]'>";
+    foreach( Array( 'Enabled' => true, 'Disabled' => false ) as $option => $value ){
+        print "<option value='". $value ."' ". selected( $options['debug'], $value ) .">". $option ."</option>";
     }
     print "</select>";
 }
